@@ -2,21 +2,23 @@
 #include <stdlib.h>
 
 /*  maze[i][j]
-J ->0   1   2   3   4   5   6   7   8   9   10  11  12
-I
-0   -1  -1  -1  -1  0   -1  0   -1  0   -1  -1  -1  -1
-1   -1  -1  -1  -1  0   -1  0   -1  0   -1  -1  -1  -1
-2   -1  -1  0   0   0   0   0   0   0   0   0   -1  -1
-3   -1  -1  0   -1  0   -1  0   -1  0   -1  0   -1  -1
-4   0   0   0   0   0   0   0   0   0   0   0   0   0
-5   -1  -1  0   -1  0   -1  0   -1  0   -1  0   -1  -1
-6   0   0   0   0   0   0   0   0   0   0   0   0   0
-7   -1  -1  0   -1  0   -1  0   -1  0   -1  0   -1  -1
-8   0   0   0   0   0   0   0   0   0   0   0   0   0
-9   -1  -1  0   -1  0   -1  0   -1  0   -1  0   -1  -1
-10  -1  -1  0   0   0   0   0   0   0   0   0   -1  -1
-11  -1  -1  -1  -1  0   -1  0   -1  0   -1  -1  -1  -1
-12  -1  -1  -1  -1  0   -1  0   -1  0   -1  -1  -1  -1
+        J ->0   1   2   3   4   5   6   7   8   9   10  11  12
+I   C                       -9      -8      -7
+0           -1  -1  -1  -1  0   -1  0   -1  0   -1  -1  -1  -1
+1           -1  -1  -1  -1  0   -1  0   -1  0   -1  -1  -1  -1
+2           -1  -1  0   0   0   0   0   0   0   0   0   -1  -1
+3           -1  -1  0   -1  0   -1  0   -1  0   -1  0   -1  -1
+4   9       0   0   0   0   0   0   0   0   0   0   0   0   0   15
+5           -1  -1  0   -1  0   -1  0   -1  0   -1  0   -1  -1
+6   19      0   0   0   0   0   0   0   0   0   0   0   0   0   25
+7           -1  -1  0   -1  0   -1  0   -1  0   -1  0   -1  -1
+8   29      0   0   0   0   0   0   0   0   0   0   0   0   0   35
+9           -1  -1  0   -1  0   -1  0   -1  0   -1  0   -1  -1
+10          -1  -1  0   0   0   0   0   0   0   0   0   -1  -1
+11          -1  -1  -1  -1  0   -1  0   -1  0   -1  -1  -1  -1
+12          -1  -1  -1  -1  0   -1  0   -1  0   -1  -1  -1  -1
+                            51      52      53
+
 
 Checkpoint mapping
 ckp ->  [i][j]
@@ -82,7 +84,7 @@ void initMaze()
 }
 
 /* Map the ckp values to i and j values */
-int * map(int in,int v)
+int map(int in,int v)
 {
     int ckp[2];
 
@@ -147,6 +149,53 @@ int * map(int in,int v)
     }
 }
 
+int mapBack(int pi,int pj)
+{
+    int r;
+    r = 10* (pi/2-1) + (pj/2-1);
+
+    switch(r)
+    {
+        case -9:
+            r = 9;
+            break;
+        case -8:
+            r = 8;
+            break;
+        case -7:
+            r = 7;
+            break;
+        case 9:
+            r = 10;
+            break;
+        case 19:
+            r = 11;
+            break;
+        case 29:
+            r = 12;
+            break;
+        case 15:
+            r = 6;
+            break;
+        case 25:
+            r = 5;
+            break;
+        case 35:
+            r = 4;
+            break;
+        case 51:
+            r = 1;
+            break;
+        case 52:
+            r = 2;
+            break;
+        case 53:
+            r = 3;
+            break;
+    }
+    return r;
+}
+
 void setN(int i,int j, int x)
 {
     if(i != 0 && maze[i-1][j] == 0) maze[i-1][j] = x+1;
@@ -191,6 +240,139 @@ int check(int x,int si, int sj)
     return r;
 }
 
+void traceback(int x,int si,int sj)
+{
+    /*
+        0
+    1   d   2
+        3
+    */
+    int i,j,k,v,pi,pj,d;
+
+    if(mapBack(si,sj) < 4)
+    {
+        d = 0;
+    }
+    else if(mapBack(si,sj) < 7)
+    {
+        d = 1;
+    }
+    else if(mapBack(si,sj) < 10)
+    {
+        d = 3;
+    }
+
+    else
+    {
+        d = 2;
+    }
+
+    v=x;
+
+    for(i=0;i<13;i++)
+    {
+        for(j=0;j<13;j++)
+        {
+            if(maze[i][j] == v && i == si && j == sj)
+            {
+                printf("%02d ",mapBack(i,j));
+                v--;
+                pi=i;
+                pj=j;
+            }
+        }
+    }
+
+    for(k=v-1;k>=0;k--)
+    {
+        switch(d)
+        {
+            case 0:
+                if(maze[pi-1][pj] == v)
+                {
+                    pi = pi-1;
+                }
+                else if(maze[pi][pj-1] == v)
+                {
+                    pj = pj-1;
+                    d = 1;
+                }
+                else if(maze[pi][pj+1] == v)
+                {
+                    pj = pj+1;
+                    d = 2;
+                }
+                v--;
+                break;
+            case 1:
+                if(maze[pi][pj-1] == v)
+                {
+                    pj = pj-1;
+                }
+                else if(maze[pi-1][pj] == v)
+                {
+                    pi = pi-1;
+                    d = 0;
+                }
+                else if(maze[pi+1][pj] == v)
+                {
+                    pi = pi+1;
+                    d = 3;
+                }
+                v--;
+                break;
+            case 2:
+                if(maze[pi][pj+1] == v)
+                {
+                    pj = pj+1;
+                }
+                else if(maze[pi-1][pj] == v)
+                {
+                    pi = pi-1;
+                    d = 0;
+                }
+                else if(maze[pi+1][pj] == v)
+                {
+                    pi = pi+1;
+                    d = 3;
+                }
+                v--;
+                break;
+            case 3:
+                if(maze[pi+1][pj] == v)
+                {
+                    pi = pi+1;
+                }
+                else if(maze[pi][pj-1] == v)
+                {
+                    pj = pj-1;
+                    d = 1;
+                }
+                else if(maze[pi][pj+1] == v)
+                {
+                    pj = pj+1;
+                    d = 2;
+                }
+                v--;
+                break;
+        }
+
+        if(pi%2 == 0 && pj%2 == 0)
+        {
+            if(v != 0)
+            {
+                printf("c%02d ",10*(pi/2-1)+(pj/2-1));
+            }
+            else
+            {
+                printf("%02d ",mapBack(pi,pj));
+            }
+        }
+    }
+
+    printf("\n");
+}
+
 void route(int si,int sj,int ei,int ej)
 {
 
@@ -203,7 +385,6 @@ void route(int si,int sj,int ei,int ej)
 
     while (check(cnt,si,sj))
     {
-        printf("%d\n",cnt);
         sNs(cnt);
         cnt++;
 
@@ -211,7 +392,7 @@ void route(int si,int sj,int ei,int ej)
 
     }
 
-
+    traceback(cnt,si,sj);
 
     int i,j;
     for(i=0;i<13;i++)
@@ -226,11 +407,33 @@ void route(int si,int sj,int ei,int ej)
 
 }
 
+void setMine()
+{
+    int N,tmp;
+
+    printf("Enter the amount of mines and the position of these mines.\n");
+    scanf("%d",&N);
+
+    while(scanf("%c") == 1)
+    {
+        scanf("%d",&tmp);
+    }
+}
+
 int main()
 {
     int N,i,sp[2],tmp;
 
     initMaze();
+
+/* Set certain places to -1 due to mines on the road */
+    /* setMine(); */
+
+/* Get the start position */
+    printf("Enter the start position terminated by an enter.\n");
+    scanf("%d",&tmp);
+    sp[0] = map(tmp,0);
+    sp[1] = map(tmp,1);
 
 /* get the positions of the checkpoints */
     printf("First enter the amount of checkpoints terminated by an enter.\n");
@@ -251,11 +454,7 @@ int main()
         ckp[N-i][1] = p[1];
     }
 
-/* Get the start position */
-    printf("Enter the start position terminated by an enter.\n");
-    scanf("%d",&tmp);
-    sp[0] = map(tmp,0);
-    sp[1] = map(tmp,1);
+
 
 /* Route to the checkpoints */
     /* route (x[i],x[j],y[i],y[j]); route from X to Y */

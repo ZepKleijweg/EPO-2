@@ -83,6 +83,24 @@ void initMaze()
     }
 }
 
+/* Set appropriate places to 0 */
+void reInitMaze()
+{
+    int i,j;
+
+    /* Everything -1 */
+    for(i=0;i<13;i++)
+    {
+        for(j=0;j<13;j++)
+        {
+            if(maze[i][j] > 0)
+            {
+                maze[i][j] = 0;
+            }
+        }
+    }
+}
+
 /* Map the ckp values to i and j values */
 int map(int in,int v)
 {
@@ -379,7 +397,7 @@ void route(int si,int sj,int ei,int ej)
 
     int cnt;
     cnt = 1;
-    initMaze();
+    reInitMaze();
 
     maze[ei][ej] = 1;
 
@@ -409,15 +427,45 @@ void route(int si,int sj,int ei,int ej)
 
 void setMine()
 {
-    int N,tmp;
+    int N,tmp[4],bi,bj,i;
+    char tmpc;
 
     printf("Enter the amount of mines and the position of these mines.\n");
     scanf("%d",&N);
 
-    while(scanf("%c") == 1)
+    for(i=0;i<N;i++)
     {
-        scanf("%d",&tmp);
+        scanf("%c",&tmpc);
+        while(tmpc != 'e')
+        {
+            scanf("%c",&tmpc);
+        }
+        scanf("%1d",&tmp[0]);
+        scanf("%1d",&tmp[1]);
+        scanf("%1d",&tmp[2]);
+        scanf("%1d",&tmp[3]);
+
+        if(tmp[2]>tmp[0])
+        {
+            bi = 2*(1+tmp[0]) + (tmp[2]-tmp[0]);
+        }
+        else
+        {
+            bi = 2*(1+tmp[0]) + (tmp[0]-tmp[2]);
+        }
+
+        if(tmp[3]>tmp[1])
+        {
+            bj = 2*(1+tmp[1]) + (tmp[3]-tmp[1]);
+        }
+        else
+        {
+            bj = 2*(1+tmp[1]) + (tmp[1]-tmp[3]);
+        }
+
+        maze[bi][bj] = -1;
     }
+
 }
 
 int main()
@@ -427,7 +475,7 @@ int main()
     initMaze();
 
 /* Set certain places to -1 due to mines on the road */
-    /* setMine(); */
+    setMine();
 
 /* Get the start position */
     printf("Enter the start position terminated by an enter.\n");
